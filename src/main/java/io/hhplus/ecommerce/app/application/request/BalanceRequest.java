@@ -13,4 +13,8 @@ public class BalanceRequest {
     private int amount;
 
 
+    public BalanceRequest(long userId) {
+        this.userId = userId;
+        this.amount = getAmount();
+    }
 }
