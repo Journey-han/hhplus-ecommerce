@@ -1,15 +1,12 @@
 package io.hhplus.ecommerce;
 
 import io.hhplus.ecommerce.app.application.service.ProductService;
-import io.hhplus.ecommerce.app.domain.model.Product;
 import io.hhplus.ecommerce.app.application.response.ProductResponse;
-import io.hhplus.ecommerce.app.infrastructure.persistence.ProductRepositoryImpl;
+import io.hhplus.ecommerce.app.infrastructure.persistence.ProductRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ProductServiceTest {
 
     @Autowired
-    private ProductRepositoryImpl productRepository;
+    private ProductRepository productRepository;
 
     @Autowired
     private ProductService productService;

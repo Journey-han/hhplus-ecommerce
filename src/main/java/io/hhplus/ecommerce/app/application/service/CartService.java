@@ -15,20 +15,27 @@ public class CartService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+
+    /**
+     * 6.1 카트에 상품 추가
+     * @param userId
+     * @param request
+     * @param response
+     */
     public void addItemToCart(Long userId, CartItemRequest request, HttpServletResponse response) {
         Cookie cartCookie = new Cookie("cart", request.toString());
         cartCookie.setMaxAge(60 * 60);
         response.addCookie(cartCookie);
     }
 
-    public void deleteAllItemFromCart(Long userId, CartItemRequest request, HttpServletResponse response) {
-        // 카트 쿠키를 만료시켜 삭제합니다.
-        Cookie cartCookie = new Cookie("cart", null);
-        cartCookie.setMaxAge(0);
-        cartCookie.setPath("/");
-        response.addCookie(cartCookie);
-    }
 
+    /**
+     * 6.2 카트 특정 상품 삭제
+     * @param productId
+     * @param userId
+     * @param request
+     * @param response
+     */
     public void deleteItemFromCart(Long productId, Long userId, HttpServletRequest request, HttpServletResponse response) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
@@ -52,5 +59,20 @@ public class CartService {
                 }
             }
         }
+    }
+
+
+    /**
+     * 6.3 카트 상품 전부 삭제
+     * @param userId
+     * @param request
+     * @param response
+     */
+    public void deleteAllItemFromCart(Long userId, CartItemRequest request, HttpServletResponse response) {
+        // 카트 쿠키를 만료시켜 삭제합니다.
+        Cookie cartCookie = new Cookie("cart", null);
+        cartCookie.setMaxAge(0);
+        cartCookie.setPath("/");
+        response.addCookie(cartCookie);
     }
 }

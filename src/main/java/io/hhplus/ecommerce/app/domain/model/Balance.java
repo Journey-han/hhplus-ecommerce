@@ -9,32 +9,35 @@ import org.springframework.http.HttpStatus;
 @Entity
 @Table(name = "BALANCE")
 public class Balance {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // IDENTITY 전략 사용
+    @Column(name = "id", nullable = false, updatable = false)
     private Long id;
 
-    @Column(name = "USER_ID")
+    @Column(name = "user_id")
     private Long userId;
-    private int amount;
 
-    public Balance(Long id, Long userId, int amount ) {
+    @Column(name = "total_balance", nullable = false, updatable = false)
+    private int totalBalance;
+
+    public Balance(Long id, Long userId, int totalBalance ) {
         this.id = id;
         this.userId = userId;
-        this.amount = amount;
+        this.totalBalance = totalBalance;
     }
 
     protected Balance() {}
 
     public void addAmount(int addAmount) {
-        this.amount += addAmount;
+        this.totalBalance += addAmount;
     }
 
     public void minusAmount(int minusAmount) {
-        if (this.amount < minusAmount) {
+        if (this.totalBalance < minusAmount) {
             throw new CustomException(HttpStatus.BAD_REQUEST,
-                    "잔액이 부족합니다. 현재 잔액: " + this.amount);
+                    "잔액이 부족합니다. 현재 잔액: " + this.totalBalance);
         }
-        this.amount -= minusAmount;
+        this.totalBalance -= minusAmount;
     }
 }

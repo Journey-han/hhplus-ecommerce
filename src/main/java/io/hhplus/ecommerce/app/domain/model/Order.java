@@ -1,23 +1,26 @@
 package io.hhplus.ecommerce.app.domain.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-@RequiredArgsConstructor
 @Entity
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "ORDERS")
 public class Order {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private Long userId;
-
-    private String bondKey;
 
     private int totalPrice;
 
@@ -47,9 +50,6 @@ public class Order {
         this.totalPrice = totalPrice;
     }
 
-    public void createBondKey(String bondKey) {
-        this.bondKey = bondKey;
-    }
 
     public void updateStatus(String status) {
         this.status = status;

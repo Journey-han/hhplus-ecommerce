@@ -3,26 +3,33 @@ package io.hhplus.ecommerce.app.api;
 import io.hhplus.ecommerce.app.application.service.BalanceService;
 import io.hhplus.ecommerce.app.application.request.BalanceRequest;
 import io.hhplus.ecommerce.app.application.response.BalanceResponse;
+import io.hhplus.ecommerce.app.domain.common.CommonApiResponse;
+import io.hhplus.ecommerce.app.domain.common.Result;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/balance")
+@RequestMapping("/api/v1/users")
 public class BalanceController {
 
     private final BalanceService balanceService;
 
-    @PostMapping("/charge")
-    public ResponseEntity<BalanceResponse> chargeBalance(@RequestBody BalanceRequest request) {
-        BalanceResponse response = balanceService.chargeBalance(request);
+    @PostMapping("/balance")
+    public ResponseEntity<CommonApiResponse<?>> chargeBalance(@RequestHeader("userId") Long userId, @RequestBody BalanceRequest request) {
+
+        BalanceResponse balanceResponse = balanceService.chargeBalance(userId, request);
+        CommonApiResponse<BalanceResponse> response = new CommonApiResponse<>(Result.OK.getStatus(), Result.OK.getMessage(), "포인트 충전에 성공했습니다!", balanceResponse);
+
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<BalanceResponse> getBalance(@PathVariable("userId") Long userId) {
-        BalanceResponse response = balanceService.getBalance(userId);
+    @GetMapping("/balance")
+    public ResponseEntity<CommonApiResponse<?>> getBalance(@RequestHeader("userId") Long userId) {
+        BalanceResponse balanceResponse = balanceService.getBalance(userId);
+        CommonApiResponse<BalanceResponse> response = new CommonApiResponse<>(Result.OK.getStatus(), Result.OK.getMessage(), "고객님의 포인트를 조회합니다!", balanceResponse);
+
         return ResponseEntity.ok(response);
     }
 }
