@@ -3,6 +3,7 @@ package io.hhplus.ecommerce.app.domain.model;
 import io.hhplus.ecommerce.app.exception.CustomException;
 import jakarta.persistence.*;
 import lombok.Getter;
+import org.hibernate.annotations.DialectOverride;
 import org.springframework.http.HttpStatus;
 
 @Getter
@@ -20,6 +21,9 @@ public class Balance {
 
     @Column(name = "total_balance", nullable = false, updatable = false)
     private int totalBalance;
+
+    @Version()
+    private int version;
 
     public Balance(Long id, Long userId, int totalBalance ) {
         this.id = id;
