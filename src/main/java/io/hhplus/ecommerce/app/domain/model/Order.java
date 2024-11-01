@@ -12,7 +12,6 @@ import java.util.UUID;
 @Entity
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "ORDERS")
 public class Order {
 

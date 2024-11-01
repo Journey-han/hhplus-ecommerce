@@ -3,11 +3,12 @@ package io.hhplus.ecommerce.app.domain.model;
 import io.hhplus.ecommerce.app.exception.CustomException;
 import jakarta.persistence.*;
 import lombok.Getter;
-import org.hibernate.annotations.DialectOverride;
+import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 @Getter
 @Entity
+@NoArgsConstructor
 @Table(name = "BALANCE")
 public class Balance {
 
@@ -22,8 +23,8 @@ public class Balance {
     @Column(name = "total_balance", nullable = false, updatable = false)
     private int totalBalance;
 
-    @Version()
-    private int version;
+    @Version
+    private Integer version;
 
     public Balance(Long id, Long userId, int totalBalance ) {
         this.id = id;
@@ -31,7 +32,6 @@ public class Balance {
         this.totalBalance = totalBalance;
     }
 
-    protected Balance() {}
 
     public void addAmount(int addAmount) {
         this.totalBalance += addAmount;

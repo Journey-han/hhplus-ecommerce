@@ -1,12 +1,15 @@
 package io.hhplus.ecommerce.app.domain.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@NoArgsConstructor
 @Table(name = "PRODUCT_STOCK")
 public class ProductStock {
     @Id
@@ -25,12 +28,6 @@ public class ProductStock {
         this.stock = stock;
         this.updateDate = LocalDateTime.now();
     }
-
-
-    public ProductStock() {
-
-    }
-
 
     // 재고 예약 (출고)
     public void reserveStock(int quantity) {
