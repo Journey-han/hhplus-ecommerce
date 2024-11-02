@@ -5,10 +5,10 @@ import lombok.Data;
 @Data
 public class BalanceResponse {
     private Long userId;
-    private int balance;
+    private int totalBalance;
 
-    public BalanceResponse(Long userId, int balance) {
+    public BalanceResponse(Long userId, int totalBalance) {
         this.userId = userId;
-        this.balance = balance;
+        this.totalBalance = totalBalance;
     }
 }

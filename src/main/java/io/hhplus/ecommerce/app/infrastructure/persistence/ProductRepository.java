@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class ProductRepositoryImpl {
+public class ProductRepository {
 
     @PersistenceContext
     private EntityManager entityManager;

@@ -16,18 +16,12 @@ public class ProductStock {
 
     private Long productId;
 
-    private int quantity;  // 입출고 수량 (양수는 입고, 음수는 출고)
-
-    private String productType;
-
     private int stock;
 
     private LocalDateTime updateDate;
 
-    public ProductStock(Long productId, int quantity, String productType, int stock) {
+    public ProductStock(Long productId, int stock) {
         this.productId = productId;
-        this.quantity = quantity;
-        this.productType = productType;
         this.stock = stock;
         this.updateDate = LocalDateTime.now();
     }
