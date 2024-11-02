@@ -2,13 +2,17 @@ package io.hhplus.ecommerce.app.domain.model;
 
 import io.hhplus.ecommerce.app.domain.common.RandomKeyGenerator;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Getter
+@NoArgsConstructor
+@Table(name = "PAYMENT")
 public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +37,4 @@ public class Payment {
         this.createDate = LocalDateTime.now();
     }
 
-    public Payment() {
-
-    }
 }

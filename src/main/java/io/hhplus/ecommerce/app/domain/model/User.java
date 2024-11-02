@@ -2,11 +2,13 @@ package io.hhplus.ecommerce.app.domain.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Getter
 @Entity
+@NoArgsConstructor
 @Table(name = "USERS")
 public class User {
 
@@ -20,4 +22,9 @@ public class User {
 
     private LocalDate updateDate;
 
+    public User(long userId, String status) {
+        this.userId = userId;
+        this.status = status;
+        this.createDate = LocalDate.now();
+    }
 }

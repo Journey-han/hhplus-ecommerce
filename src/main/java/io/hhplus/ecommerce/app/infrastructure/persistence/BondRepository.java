@@ -4,9 +4,11 @@ package io.hhplus.ecommerce.app.infrastructure.persistence;
 import io.hhplus.ecommerce.app.domain.model.Bond;
 import io.hhplus.ecommerce.app.exception.CustomException;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 
@@ -21,6 +23,7 @@ public class BondRepository {
         entityManager.persist(bond);
     }
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     public Bond findByOrderId(Long orderId) {
         try {
             return entityManager.createQuery("SELECT b FROM Bond b WHERE b.orderId = :orderId", Bond.class)

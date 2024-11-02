@@ -1,6 +1,7 @@
 package io.hhplus.ecommerce.app.application.service;
 
 import io.hhplus.ecommerce.app.domain.common.BondStatus;
+import io.hhplus.ecommerce.app.domain.common.UserStatus;
 import io.hhplus.ecommerce.app.infrastructure.persistence.*;
 import io.hhplus.ecommerce.app.domain.model.*;
 import io.hhplus.ecommerce.app.exception.CustomException;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class OrderService {
     private final BalanceRepository balanceRepository;
     private final ProductRepository productRepository;
     private final ProductStockRepository productStockRepository;
+    private final UserRepository userRepository;
 
 
     /**
@@ -46,8 +49,8 @@ public class OrderService {
     public OrderResponse createOrder(Long userId, OrderRequest request) {
         log.debug("request : {}", request);
 
-        User user = balanceRepository.getUserStatusById(userId);
-        if (user == null) {
+        User user = userRepository.findByUserId(userId);
+        if (user == null || Objects.equals(user.getStatus(), UserStatus.DEACTIVATE.getMessage())) {
             log.info("User not found for userId={}", userId);
             throw new CustomException(HttpStatus.NOT_FOUND, "고객 정보를 찾을 수 없습니다. 요청한 userId=" + userId);
         } else {

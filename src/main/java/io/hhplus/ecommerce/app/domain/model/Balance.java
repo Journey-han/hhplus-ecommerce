@@ -3,10 +3,12 @@ package io.hhplus.ecommerce.app.domain.model;
 import io.hhplus.ecommerce.app.exception.CustomException;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 @Getter
 @Entity
+@NoArgsConstructor
 @Table(name = "BALANCE")
 public class Balance {
 
@@ -21,13 +23,15 @@ public class Balance {
     @Column(name = "total_balance", nullable = false, updatable = false)
     private int totalBalance;
 
+    @Version
+    private Integer version;
+
     public Balance(Long id, Long userId, int totalBalance ) {
         this.id = id;
         this.userId = userId;
         this.totalBalance = totalBalance;
     }
 
-    protected Balance() {}
 
     public void addAmount(int addAmount) {
         this.totalBalance += addAmount;
