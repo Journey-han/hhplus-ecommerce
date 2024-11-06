@@ -38,6 +38,13 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final ProductStockRepository productStockRepository;
     private final UserRepository userRepository;
+    private final ProductService productService;
+    private final ProductStockService productStockService;
+    private final BalanceService balanceService;
+
+    public List<OrderItem> getOrderItem(Long orderId) {
+        return orderRepository.getOrderItem(orderId);
+    }
 
 
     /**
@@ -46,7 +53,7 @@ public class OrderService {
      * @return
      */
     @Transactional
-    public OrderResponse createOrder(Long userId, OrderRequest request) {
+    public Order createOrder(Long userId, OrderRequest request) {
         log.debug("request : {}", request);
 
         User user = userRepository.findByUserId(userId);
@@ -66,33 +73,45 @@ public class OrderService {
 
             // 3. 총 금액 계산
             int totalPrice = calculateTotalPrice(orderItems);
+            order.updateTotalPrice(totalPrice);
             Bond bond = new Bond(order.getId(), totalPrice, BondStatus.ISSUED.getMessage());
 
             // 4. 해당 주문에 대한 채권 생성
             bondRepository.save(bond);
-            order.updateTotalPrice(totalPrice);
+            orderRepository.saveOrder(order);
 
-            // 5. 주문 응답 생성
+            //5. 주문 응답 생성
             List<OrderItemResponse> orderItemResponses = generateOrderItemResponses(orderItems);
 
-            log.debug("orderItemResponse : {}", orderItemResponses);
+           log.debug("orderItemResponse : {}", orderItemResponses);
 
-            return new OrderResponse(
-                    order.getId(),
-                    userId,
-                    totalPrice,
-                    order.getStatus(),
-                    orderItemResponses,
-                    order.getCreateDate(),
-                    order.getUpdateDate()
-            );
+            return order;
         }
 
     }
 
+    /**
+     * 2.1.2 주문 아이템 생성
+     * @param orderItems
+     * @return
+     */
+    public List<OrderItemResponse> generateOrderItemResponses(List<OrderItem> orderItems) {
+        return orderItems.stream()
+                .map(item -> {
+                    Product product = productRepository.getOneProducts(item.getProductId())
+                            .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND,
+                                    "상품을 찾을 수 없습니다: " + item.getProductId()));
+
+                    return new OrderItemResponse(
+                            item.getId(), product.getId(), product.getName(),
+                            product.getPrice(), item.getQuantity());
+                })
+                .collect(Collectors.toList());
+    }
+
 
     /**
-     * 2.1.1 상품 재고 차감 예약 수행 (주문 항목 생성시)
+     * 2.1.2 상품 재고 차감 예약 수행 (주문 항목 생성시)
      * @param itemRequest
      * @param orderId
      * @return
@@ -124,7 +143,7 @@ public class OrderService {
 
 
     /**
-     * 2.1.2 재고 차감 예약 해제 (결제 실패시)
+     * 2.1.3 재고 차감 예약 해제 (결제 실패시)
      * @param orderId
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -178,7 +197,7 @@ public class OrderService {
 
 
     /**
-     * 2.1.3 총 주문 금액 계산
+     * 2.1.4 총 주문 금액 계산
      * @param orderItems
      * @return
      */
@@ -195,25 +214,6 @@ public class OrderService {
     }
 
 
-    /**
-     *
-     * @param orderItems
-     * @return
-     */
-    public List<OrderItemResponse> generateOrderItemResponses(List<OrderItem> orderItems) {
-        return orderItems.stream()
-                .map(item -> {
-                    Product product = productRepository.getOneProducts(item.getProductId())
-                            .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND,
-                                    "상품을 찾을 수 없습니다: " + item.getProductId()));
-
-                    return new OrderItemResponse(
-                            item.getId(), product.getId(), product.getName(),
-                            product.getPrice(), item.getQuantity());
-                })
-                .collect(Collectors.toList());
-    }
-
 
     /**
      * 3.1 결제 수행
@@ -221,7 +221,7 @@ public class OrderService {
      * @return
      */
     @Transactional
-    public PaymentResponse processPayment(PaymentRequest request) {
+    public Payment processPayment(PaymentRequest request) {
         log.debug("request : {}", request);
 
         // 1. 주문에 대한 채권 조회
@@ -238,7 +238,7 @@ public class OrderService {
 
 
         try {
-            // 3. 결제 금액 검증
+            // 4. 결제 금액 검증
             int totalPaidAmount = orderRepository.sumPaymentsByOrderId(request.getOrderId());
             int remainingAmount = bond.getAmount() - totalPaidAmount;
             log.debug("총 결제된 금액: {}, 남은 결제 금액: {}", totalPaidAmount, remainingAmount);
@@ -247,24 +247,17 @@ public class OrderService {
                 throw new CustomException(HttpStatus.BAD_REQUEST, "결제 금액이 남은 금액을 초과했습니다.");
             }
 
-            // 4. 잔액 검증 및 차감
-            Balance userBalance = balanceRepository.getBalanceByUserId(request.getUserId());
-            if (userBalance.getTotalBalance() < request.getAmount()) {
-                throw new CustomException(HttpStatus.BAD_REQUEST, "잔액이 부족합니다. 잔액을 충전하고 결제를 다시 진행해주세요.");
-            } else{
-                userBalance.minusAmount(request.getAmount());
-                balanceRepository.save(userBalance);
+            // 5. 잔액 검증 및 차감
+           Balance decutBalance = balanceService.deductBalance(request.getUserId(),request.getAmount());
 
-                // 6. 모든 금액이 결제되면 주문 상태 업데이트
-                if (totalPaidAmount == request.getAmount()) {
-                    orderRepository.updateOrderInfo(bond.getOrderId(), OrderStatus.COMPLETED.getMessage());
-                    orderRepository.updatePaymentInfo(payment.getTxKey(), PaymentStatus.PAID.getMessage());
-                    bond.settle(bond.getBondKey());
-                }
+           // 6. 모든 금액이 결제되면 주문 상태 업데이트
+           if (totalPaidAmount == request.getAmount()) {
+               orderRepository.updateOrderInfo(bond.getOrderId(), OrderStatus.COMPLETED.getMessage());
+               orderRepository.updatePaymentInfo(payment.getTxKey(), PaymentStatus.PAID.getMessage());
+               bond.settle(bond.getBondKey());}
 
-                // 7. 결제 응답 반환
-                return new PaymentResponse(bond.getOrderId(), bond.getAmount(), PaymentStatus.PAID.getMessage());
-            }
+           // 7. 결제 응답 반환
+           return new Payment(bond.getOrderId(), bond.getAmount(), PaymentStatus.PAID.getMessage());
 
         } catch (Exception e) {
             e.printStackTrace();

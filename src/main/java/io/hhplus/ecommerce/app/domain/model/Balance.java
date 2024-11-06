@@ -26,8 +26,7 @@ public class Balance {
     @Version
     private Integer version;
 
-    public Balance(Long id, Long userId, int totalBalance ) {
-        this.id = id;
+    public Balance(Long userId, int totalBalance ) {
         this.userId = userId;
         this.totalBalance = totalBalance;
     }

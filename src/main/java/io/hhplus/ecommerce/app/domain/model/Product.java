@@ -34,4 +34,10 @@ public class Product {
         this.updateDate = LocalDateTime.now();
     }
 
+    public Product(long id, int quantity) {
+        this.id = id;
+        this.sales+=quantity;
+    }
+
+
 }

@@ -15,6 +15,10 @@ public class ProductRepository {
     @PersistenceContext
     private EntityManager entityManager;
 
+    public void save(Product product) {
+        entityManager.merge(product);
+    }
+
     public List<Product> getAllProducts() {
         return entityManager.createQuery("SELECT p FROM Product p", Product.class).getResultList();
     }

@@ -29,5 +29,6 @@ public class PaymentResponse {
         this.orderId = orderId;
         this.amount = amount;
         this.status = status;
+        this.createDate = LocalDateTime.now();
     }
 }

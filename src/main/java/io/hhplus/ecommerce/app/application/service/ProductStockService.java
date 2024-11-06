@@ -1,5 +1,7 @@
 package io.hhplus.ecommerce.app.application.service;
 
+import io.hhplus.ecommerce.app.domain.model.Product;
+import io.hhplus.ecommerce.app.infrastructure.persistence.ProductRepository;
 import io.hhplus.ecommerce.app.infrastructure.persistence.ProductStockRepository;
 import io.hhplus.ecommerce.app.domain.common.StockTransactionType;
 import io.hhplus.ecommerce.app.domain.model.ProductStock;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 public class ProductStockService {
 
     private final ProductStockRepository productStockRepository;
+    private final ProductRepository productRepository;
 
 
     /**
@@ -24,14 +27,12 @@ public class ProductStockService {
 
 
     /**
-     * 5.2 재고 업데이트
+     * 5.2 재고 업데이트 (
      * @param productId
      * @param quantity
-     * @param type
      */
-    public void recordStockChange(Long productId, int quantity, StockTransactionType type) {
-        int currentStock = getCurrentStock(productId);
-        ProductStock stockRecord = new ProductStock(productId,currentStock + quantity);
-        productStockRepository.save(stockRecord);
+    public void updateSaleProduct(Long productId, int quantity) {
+        Product product = new Product(productId, quantity);
+        productRepository.save(product);
     }
 }

@@ -22,10 +22,10 @@ public class ProductService {
      * 4.1 모든 상품 조회
      * @return
      */
-    public List<ProductResponse> getAllProducts() {
+    public List<Product> getAllProducts() {
         List<Product> products = productRepository.getAllProducts();
         return products.stream()
-                .map(product -> new ProductResponse(product.getId(), product.getName(), product.getPrice(), product.getSales(), product.getUpdateDate()))
+                .map(product -> new Product(product.getId(), product.getName(), product.getPrice(), product.getSales()))
                 .collect(Collectors.toList());
     }
 
@@ -35,9 +35,9 @@ public class ProductService {
      * @param productId
      * @return
      */
-    public ProductResponse getOneProduct(Long productId) {
+    public Product getOneProduct(Long productId) {
         Product product = productRepository.getOneProducts(productId).orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
-        return new ProductResponse(product.getId(), product.getName(), product.getPrice(), product.getSales(), product.getUpdateDate());
+        return new Product(product.getId(), product.getName(), product.getPrice(), product.getSales());
     }
 
 
@@ -46,10 +46,10 @@ public class ProductService {
      * @param sinceDate
      * @return
      */
-    public List<ProductResponse> getPopularProducts(LocalDateTime sinceDate) {
+    public List<Product> getPopularProducts(LocalDateTime sinceDate) {
         List<Product> popularProducts = productRepository.getTop5BySalesSince(sinceDate);
         return popularProducts.stream()
-                .map(product -> new ProductResponse(product.getId(), product.getName(), product.getPrice(), product.getSales(), product.getUpdateDate()))
+                .map(product -> new Product(product.getId(), product.getName(), product.getPrice(), product.getSales()))
                 .collect(Collectors.toList());
     }
 }

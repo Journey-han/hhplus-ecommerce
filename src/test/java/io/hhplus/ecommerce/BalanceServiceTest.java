@@ -47,7 +47,7 @@ public class BalanceServiceTest {
     void setUpBeforeEach() {
 
         userRepository.save(new User(1001L, UserStatus.ACTIVATE.getMessage()));
-        balanceRepository.save(new Balance(1L, 1001L, 5000));
+        balanceRepository.save(new Balance(1001L, 5000));
 
         Balance savedBalance = balanceRepository.getBalanceByUserId(1001L);
         assertNotNull(savedBalance);
@@ -60,7 +60,7 @@ public class BalanceServiceTest {
     public void successBalanceTopUp() {
 
         BalanceRequest request = new BalanceRequest(10000);
-        BalanceResponse response = balanceService.chargeBalance(1001L, request);
+        Balance response = balanceService.chargeBalance(1001L, request);
 
         assertThat(response).isNotNull();
         assertThat(response.getTotalBalance()).isEqualTo(15000); // 5000 + 10000 = 15000
@@ -70,7 +70,7 @@ public class BalanceServiceTest {
     @DisplayName("잔액 조회 테스트")
     public void getBalanceTest() {
 
-        BalanceResponse response = balanceService.getBalance(1001L);
+        Balance response = balanceService.getBalance(1001L);
 
         assertThat(response).isNotNull();
         assertThat(response.getTotalBalance()).isEqualTo(50000);
