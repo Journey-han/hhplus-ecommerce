@@ -1,5 +1,6 @@
 package io.hhplus.ecommerce;
 
+import io.hhplus.ecommerce.app.domain.model.ProductStock;
 import io.hhplus.ecommerce.app.infrastructure.persistence.ProductStockRepository;
 import io.hhplus.ecommerce.app.application.service.OrderService;
 import io.hhplus.ecommerce.app.domain.common.OrderStatus;
@@ -45,7 +46,7 @@ public class OrderServiceTest {
         Mockito.when(productStockRepository.getCurrentStock(2L)).thenReturn(5);
         //Mockito.when(orderRepository.saveOrder(order)).thenReturn(order);
 
-        OrderResponse response = orderService.createOrder(1001L, orderRequest);
+        Order response = orderService.createOrder(1001L, orderRequest);
 
         assertEquals(OrderStatus.COMPLETED.getMessage(), response.getStatus());
         Mockito.verify(orderRepository).saveOrder(order);

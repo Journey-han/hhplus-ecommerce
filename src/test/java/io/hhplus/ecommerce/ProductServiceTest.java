@@ -2,6 +2,7 @@ package io.hhplus.ecommerce;
 
 import io.hhplus.ecommerce.app.application.service.ProductService;
 import io.hhplus.ecommerce.app.application.response.ProductResponse;
+import io.hhplus.ecommerce.app.domain.model.Product;
 import io.hhplus.ecommerce.app.infrastructure.persistence.ProductRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ public class ProductServiceTest {
     public void getAllProductsTest() {
 
         // 상품 조회
-        List<ProductResponse> products = productService.getAllProducts();
+        List<Product> products = productService.getAllProducts();
 
         // 검증
         assertThat(products).hasSize(2);
@@ -39,7 +40,7 @@ public class ProductServiceTest {
     public void getPopularProductsTest() {
         LocalDateTime dateTime = LocalDateTime.now();
 
-        List<ProductResponse> popularProducts = productService.getPopularProducts(dateTime);
+        List<Product> popularProducts = productService.getPopularProducts(dateTime);
 
         // 검증
         assertThat(popularProducts).hasSize(2);

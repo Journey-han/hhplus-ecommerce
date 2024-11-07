@@ -21,12 +21,12 @@ public class ProductStock {
 
     private int stock;
 
-    private LocalDateTime updateDate;
+    private String updateDate;
 
     public ProductStock(Long productId, int stock) {
         this.productId = productId;
         this.stock = stock;
-        this.updateDate = LocalDateTime.now();
+        this.updateDate = String.valueOf(LocalDateTime.now());
     }
 
     // 재고 예약 (출고)
@@ -40,6 +40,13 @@ public class ProductStock {
     // 재고 해제 (예약 취소 시)
     public void releaseStock(int quantity) {
         this.stock += quantity;
-        this.updateDate = LocalDateTime.now();
+        this.updateDate = String.valueOf(LocalDateTime.now());
+    }
+
+    // 재고 업데이트
+    public void updateStock(Long productId, int quantity) {
+        this.productId = productId;
+        this.stock+=quantity;
+        this.updateDate = String.valueOf(LocalDateTime.now());
     }
 }

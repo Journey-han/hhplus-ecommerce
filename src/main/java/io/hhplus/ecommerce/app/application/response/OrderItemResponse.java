@@ -5,9 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
 @Schema(description = "주문 상품 항목")
 public class OrderItemResponse {
     @Schema(description = "주문 상품 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)

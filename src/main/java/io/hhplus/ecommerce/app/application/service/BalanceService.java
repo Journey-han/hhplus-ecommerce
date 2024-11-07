@@ -37,26 +37,18 @@ public class BalanceService {
      * @param userId
      * @return
      */
-    public BalanceResponse getBalance(Long userId) {
-        log.info("Received request to get balance for userId={}", userId);
-
+    public Balance getBalance(Long userId) {
         User user = userRepository.findByUserId(userId);
         if (user == null || Objects.equals(user.getStatus(), UserStatus.DEACTIVATE.getMessage())) {
-            log.info("User not found for userId={}", userId);
             throw new CustomException(HttpStatus.NOT_FOUND, "고객 정보를 찾을 수 없습니다. 요청한 userId=" + userId);
         } else {
             Balance balance = balanceRepository.getBalanceByUserId(userId);
             if (balance == null) {
-                log.error("No balance found for userId={}", userId);
+                log.error("해당 고객에 대한 잔액 정보를 찾을 수 없습니다.userId={}", userId);
                 throw new CustomException(HttpStatus.BAD_REQUEST, "해당 고객에 대한 잔액 정보를 찾을 수 없습니다.");
             }
 
-            log.info("Balance for userId={} is {}", userId, balance.getTotalBalance());
-
-            BalanceResponse response = new BalanceResponse(balance.getUserId(), balance.getTotalBalance());
-            log.info("Response generated for userId={}, totalBalance={}", response.getUserId(), response.getTotalBalance());
-
-            return response;
+            return new Balance(balance.getUserId(), balance.getTotalBalance());
         }
     }
 
@@ -72,12 +64,10 @@ public class BalanceService {
             backoff = @Backoff(delay = 1000)
     )
     @Transactional
-    public BalanceResponse chargeBalance(Long userId, BalanceRequest request) {
-        log.info("잔액 충전 요청 사항: userId={}, amount={}", userId, request.getAmount());
+    public Balance chargeBalance(Long userId, BalanceRequest request) {
         try {
             User user = userRepository.findByUserId(userId);
             if (user == null || Objects.equals(user.getStatus(), UserStatus.DEACTIVATE.getMessage())) {
-                log.info("고객 정보를 찾을 수 없습니다. userId={}", userId);
                 throw new CustomException(HttpStatus.NOT_FOUND, "고객 정보를 찾을 수 없습니다.");
             } else {
                 Balance balance = balanceRepository.getBalanceByUserId(userId);
@@ -85,19 +75,43 @@ public class BalanceService {
                     log.error("해당 고객에 대한 잔액 정보를 찾을 수 없습니다.userId={}", userId);
                     throw new CustomException(HttpStatus.BAD_REQUEST, "해당 고객에 대한 잔액 정보를 찾을 수 없습니다.");
                 }
-                log.info("현재 userId={} 고객님의 잔액 정보는 {} 입니다.", userId, balance.getTotalBalance());
 
                 balance.addAmount(request.getAmount());
-                log.info("userId={}님이 요청한 {} 포인트가 충전되었습니다.", userId, balance.getTotalBalance());
 
                 balanceRepository.save(balance);
 
-                BalanceResponse response = new BalanceResponse(balance.getUserId(), balance.getTotalBalance());
-
-                return response;
+                return new Balance(balance.getUserId(), balance.getTotalBalance());
             }
         }catch (OptimisticLockException e) {
                 throw new CustomException(HttpStatus.CONFLICT, "충돌이 발생!");
+        }
+    }
+
+    /**
+     * 1.3 잔액 차감
+     * @return
+     */
+    @Transactional
+    public Balance deductBalance(Long userId, int amount) {
+        try {
+            User user = userRepository.findByUserId(userId);
+            if (user == null || Objects.equals(user.getStatus(), UserStatus.DEACTIVATE.getMessage())) {
+                throw new CustomException(HttpStatus.NOT_FOUND, "고객 정보를 찾을 수 없습니다.");
+            } else {
+                Balance balance = balanceRepository.getBalanceByUserId(userId);
+                if (balance == null) {
+                    log.error("해당 고객에 대한 잔액 정보를 찾을 수 없습니다.userId={}", userId);
+                    throw new CustomException(HttpStatus.BAD_REQUEST, "해당 고객에 대한 잔액 정보를 찾을 수 없습니다.");
+                }
+
+                balance.minusAmount(amount);
+
+                balanceRepository.save(balance);
+
+                return new Balance(balance.getUserId(), balance.getTotalBalance());
+            }
+        }catch (OptimisticLockException e) {
+            throw new CustomException(HttpStatus.CONFLICT, "충돌이 발생!");
         }
     }
 

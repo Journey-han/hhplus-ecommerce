@@ -15,14 +15,19 @@ public class ProductRepository {
     @PersistenceContext
     private EntityManager entityManager;
 
+    public void save(Product product) {
+        entityManager.merge(product);
+    }
+
     public List<Product> getAllProducts() {
         return entityManager.createQuery("SELECT p FROM Product p", Product.class).getResultList();
     }
 
     public List<Product> getTop5BySalesSince(LocalDateTime sinceDate) {
+        String sinceDateStringDate = sinceDate.toString();
         return entityManager.createQuery(
-                        "SELECT p FROM Product p WHERE p.updateDate >= :sinceDate ORDER BY p.sales DESC", Product.class)
-                .setParameter("sinceDate", sinceDate)
+                        "SELECT p FROM Product p WHERE p.updateDate >= :sinceDateStringDate ORDER BY p.sales DESC, p.id ASC", Product.class)
+                .setParameter("sinceDateStringDate", sinceDateStringDate)
                 .setMaxResults(5)
                 .getResultList();
     }

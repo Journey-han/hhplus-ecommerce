@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -57,10 +58,13 @@ public class OrderRepository {
 
     public void updateOrderInfo(Long orderId, String status) {
 
-        String query = "UPDATE Order o SET o.status = :status WHERE o.id = :orderId";
+        LocalDateTime  updateDate = LocalDateTime.now();
+
+        String query = "UPDATE Order o SET o.status = :status, o.updateDate = :updateDate WHERE o.id = :orderId";
         int updated = entityManager.createQuery(query)
                 .setParameter("status", status)
                 .setParameter("orderId", orderId)
+                .setParameter("updateDate", updateDate)
                 .executeUpdate();
 
         if (updated != 1) {
