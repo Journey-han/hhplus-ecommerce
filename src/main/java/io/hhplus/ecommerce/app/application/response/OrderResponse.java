@@ -34,8 +34,5 @@ public class OrderResponse {
     @Schema(description = "주문 생성 시간", example = "2024-10-18T12:00:00", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime createDate;
 
-    @Schema(description = "주문 업데이트 시간", example = "2024-10-18T12:05:00", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime updateDate;
-
 
 }

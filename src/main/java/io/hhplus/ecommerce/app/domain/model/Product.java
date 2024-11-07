@@ -1,5 +1,6 @@
 package io.hhplus.ecommerce.app.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,15 +24,16 @@ public class Product {
 
     private int sales;
 
-    private LocalDateTime updateDate;
+    @Column(name = "update_date")
+    private String updateDate;
 
 
-    public Product(long id, String name, int price, int sales) {
+    public Product(long id, String name, int price, int sales, String updateDate) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.sales = sales;
-        this.updateDate = LocalDateTime.now();
+        this.updateDate = updateDate;
     }
 
     public Product(long id, int quantity) {
@@ -39,5 +41,7 @@ public class Product {
         this.sales+=quantity;
     }
 
-
+    public void updateDate() {
+        this.updateDate = String.valueOf(LocalDateTime.now());
+    }
 }

@@ -1,12 +1,9 @@
 package io.hhplus.ecommerce.app.application.service;
 
-import io.hhplus.ecommerce.app.domain.common.BondStatus;
-import io.hhplus.ecommerce.app.domain.common.UserStatus;
+import io.hhplus.ecommerce.app.domain.common.*;
 import io.hhplus.ecommerce.app.infrastructure.persistence.*;
 import io.hhplus.ecommerce.app.domain.model.*;
 import io.hhplus.ecommerce.app.exception.CustomException;
-import io.hhplus.ecommerce.app.domain.common.OrderStatus;
-import io.hhplus.ecommerce.app.domain.common.PaymentStatus;
 import io.hhplus.ecommerce.app.application.request.OrderItemRequest;
 import io.hhplus.ecommerce.app.application.request.OrderRequest;
 import io.hhplus.ecommerce.app.application.request.PaymentRequest;
@@ -14,6 +11,8 @@ import io.hhplus.ecommerce.app.application.response.OrderItemResponse;
 import io.hhplus.ecommerce.app.application.response.OrderResponse;
 import io.hhplus.ecommerce.app.application.response.PaymentResponse;
 
+import io.micrometer.core.annotation.Timed;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
 import lombok.RequiredArgsConstructor;
@@ -34,13 +33,12 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final BondRepository bondRepository;
-    private final BalanceRepository balanceRepository;
     private final ProductRepository productRepository;
     private final ProductStockRepository productStockRepository;
     private final UserRepository userRepository;
-    private final ProductService productService;
-    private final ProductStockService productStockService;
     private final BalanceService balanceService;
+
+    private final RedisTemplate<String, Object> redisTemplate;
 
     public List<OrderItem> getOrderItem(Long orderId) {
         return orderRepository.getOrderItem(orderId);
@@ -54,40 +52,47 @@ public class OrderService {
      */
     @Transactional
     public Order createOrder(Long userId, OrderRequest request) {
-        log.debug("request : {}", request);
+        long startTime = System.currentTimeMillis();
 
-        User user = userRepository.findByUserId(userId);
-        if (user == null || Objects.equals(user.getStatus(), UserStatus.DEACTIVATE.getMessage())) {
-            log.info("User not found for userId={}", userId);
-            throw new CustomException(HttpStatus.NOT_FOUND, "고객 정보를 찾을 수 없습니다. 요청한 userId=" + userId);
-        } else {
-            // 1. 주문 생성 및 저장
-            Order order = Order.create(userId, OrderStatus.PENDING.getMessage());
-            orderRepository.saveOrder(order);
+        try {
+            User user = userRepository.findByUserId(userId);
+            if (user == null || Objects.equals(user.getStatus(), UserStatus.DEACTIVATE.getMessage())) {
+                log.info("User not found for userId={}", userId);
+                throw new CustomException(HttpStatus.NOT_FOUND, "고객 정보를 찾을 수 없습니다. 요청한 userId=" + userId);
+            } else {
+                // 1. 주문 생성 및 저장
+                Order order = Order.create(userId, OrderStatus.PENDING.getMessage());
+                orderRepository.saveOrder(order);
 
-            // 2. 주문 항목 생성 및 재고 예약
-            List<OrderItem> orderItems = request.getItems().stream()
-                    .map(item -> reserveInventory(item, order.getId())) // 재고 예약 수행
-                    .collect(Collectors.toList());
-            orderItemRepository.saveAll(orderItems);
+                // 2. 주문 항목 생성 및 재고 예약
+                List<OrderItem> orderItems = request.getItems().stream()
+                        .map(item -> reserveInventory(item, order.getId())) // 재고 예약 수행
+                        .collect(Collectors.toList());
+                orderItemRepository.saveAll(orderItems);
 
-            // 3. 총 금액 계산
-            int totalPrice = calculateTotalPrice(orderItems);
-            order.updateTotalPrice(totalPrice);
-            Bond bond = new Bond(order.getId(), totalPrice, BondStatus.ISSUED.getMessage());
+                // 3. 총 금액 계산
+                int totalPrice = calculateTotalPrice(orderItems);
+                order.updateTotalPrice(totalPrice);
+                Bond bond = new Bond(order.getId(), totalPrice, BondStatus.ISSUED.getMessage());
 
-            // 4. 해당 주문에 대한 채권 생성
-            bondRepository.save(bond);
-            orderRepository.saveOrder(order);
+                // 4. 해당 주문에 대한 채권 생성
+                bondRepository.save(bond);
+                orderRepository.saveOrder(order);
 
-            //5. 주문 응답 생성
-            List<OrderItemResponse> orderItemResponses = generateOrderItemResponses(orderItems);
+                //5. 주문 응답 생성
+                List<OrderItemResponse> orderItemResponses = generateOrderItemResponses(orderItems);
 
-           log.debug("orderItemResponse : {}", orderItemResponses);
+                log.debug("orderItemResponse : {}", orderItemResponses);
 
-            return order;
+                return order;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            PerformanceLogger.logPerformance(startTime, "createOrder");
         }
-
     }
 
     /**
@@ -116,9 +121,9 @@ public class OrderService {
      * @param orderId
      * @return
      */
-    private OrderItem reserveInventory(OrderItemRequest itemRequest, Long orderId) {
-        log.debug("itemRequest : {}", itemRequest);
-        log.debug("orderId : {}", orderId);
+    @Timed(value = "reserveInventory.execution.time", description = "Time taken to execute reserveInventory method")
+    @Transactional
+    public OrderItem reserveInventory(OrderItemRequest itemRequest, Long orderId) {
 
         // 1. 상품 정보 조회
         Product product = productRepository.getOneProducts(itemRequest.getProductId())

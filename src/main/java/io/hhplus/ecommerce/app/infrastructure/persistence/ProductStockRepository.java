@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface ProductStockRepository extends JpaRepository<ProductStock, Long> {
 
-    @Query("SELECT ps.stock FROM ProductStock ps WHERE ps.productId = :productId")
+    @Query("SELECT ps FROM ProductStock ps WHERE ps.productId = :productId")
     int getCurrentStock(@Param("productId") Long productId);
 
     // 특정 상품의 최신 재고 내역 조회

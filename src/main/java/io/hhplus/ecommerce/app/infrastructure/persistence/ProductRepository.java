@@ -24,9 +24,10 @@ public class ProductRepository {
     }
 
     public List<Product> getTop5BySalesSince(LocalDateTime sinceDate) {
+        String sinceDateStringDate = sinceDate.toString();
         return entityManager.createQuery(
-                        "SELECT p FROM Product p WHERE p.updateDate >= :sinceDate ORDER BY p.sales DESC", Product.class)
-                .setParameter("sinceDate", sinceDate)
+                        "SELECT p FROM Product p WHERE p.updateDate >= :sinceDateStringDate ORDER BY p.sales DESC, p.id ASC", Product.class)
+                .setParameter("sinceDateStringDate", sinceDateStringDate)
                 .setMaxResults(5)
                 .getResultList();
     }

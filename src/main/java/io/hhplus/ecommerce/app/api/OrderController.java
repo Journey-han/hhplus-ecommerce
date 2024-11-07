@@ -62,8 +62,7 @@ public class OrderController {
                 order.getTotalPrice(),
                 order.getStatus(),
                 orderItemResponses,
-                order.getCreateDate(),
-                order.getUpdateDate()
+                order.getCreateDate()
         );
 
 

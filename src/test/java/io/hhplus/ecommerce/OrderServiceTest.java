@@ -1,5 +1,6 @@
 package io.hhplus.ecommerce;
 
+import io.hhplus.ecommerce.app.domain.model.ProductStock;
 import io.hhplus.ecommerce.app.infrastructure.persistence.ProductStockRepository;
 import io.hhplus.ecommerce.app.application.service.OrderService;
 import io.hhplus.ecommerce.app.domain.common.OrderStatus;

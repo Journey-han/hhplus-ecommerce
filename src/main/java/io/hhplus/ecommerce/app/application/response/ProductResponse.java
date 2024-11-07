@@ -26,6 +26,6 @@ public class ProductResponse {
     private int sales;
 
     @Schema(description = "상품 업데이트 시간", example = "2024-10-18T12:00:00", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime updateDate;
+    private String updateDate;
 
 }
